@@ -8,6 +8,7 @@ import (
 
 	"github.com/k3s-io/kine/pkg/broadcaster"
 	"github.com/k3s-io/kine/pkg/drivers/generic"
+	"github.com/k3s-io/kine/pkg/kubernetes"
 	"github.com/k3s-io/kine/pkg/server"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -340,6 +341,8 @@ func (s *SQLLog) Watch(ctx context.Context, prefix string) <-chan []*server.Even
 
 	go func() {
 		defer close(res)
+		_, prefix, _ = kubernetes.ExtractLabels(prefix)
+
 		for i := range values {
 			events, ok := filter(i, checkPrefix, prefix)
 			if ok {

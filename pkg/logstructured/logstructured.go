@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/k3s-io/kine/pkg/kubernetes"
 	"github.com/k3s-io/kine/pkg/server"
 	"github.com/sirupsen/logrus"
 )
@@ -219,7 +220,8 @@ func (l *LogStructured) Update(ctx context.Context, key string, value []byte, re
 		logrus.Tracef("UPDATE %s, value=%d, rev=%d, lease=%v => rev=%d, kvrev=%d, updated=%v, err=%v", key, len(value), revision, lease, revRet, kvRev, updateRet, errRet)
 	}()
 
-	rev, event, err := l.get(ctx, key, 0, false)
+	_, actualKey, _ := kubernetes.ExtractLabels(key)
+	rev, event, err := l.get(ctx, actualKey, 0, false)
 	if err != nil {
 		return 0, nil, false, err
 	}

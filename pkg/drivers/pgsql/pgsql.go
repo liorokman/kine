@@ -33,16 +33,22 @@ var (
  				prev_revision INTEGER,
  				lease INTEGER,
  				value bytea,
- 				old_value bytea
+ 				old_value bytea,
+				labels TEXT[]
  			);`,
 		`CREATE INDEX IF NOT EXISTS kine_name_index ON kine (name)`,
 		`CREATE INDEX IF NOT EXISTS kine_name_id_index ON kine (name,id)`,
 		`CREATE INDEX IF NOT EXISTS kine_id_deleted_index ON kine (id,deleted)`,
 		`CREATE INDEX IF NOT EXISTS kine_prev_revision_index ON kine (prev_revision)`,
 		`CREATE UNIQUE INDEX IF NOT EXISTS kine_name_prev_revision_uindex ON kine (name, prev_revision)`,
+		`CREATE INDEX IF NOT EXISTS kine_labels_index  ON kine USING gin (labels)`,
 	}
 	createDB = "CREATE DATABASE "
 )
+
+func toArray(s []string) interface{} {
+	return pq.Array(s)
+}
 
 func New(ctx context.Context, dataSourceName string, tlsInfo tls.Config, connPoolConfig generic.ConnectionPoolConfig) (server.Backend, error) {
 	parsedDSN, err := prepareDSN(dataSourceName, tlsInfo)
@@ -81,6 +87,8 @@ func New(ctx context.Context, dataSourceName string, tlsInfo tls.Config, connPoo
 		}
 		return err
 	}
+
+	dialect.ArrayTranslate = toArray
 
 	if err := setup(dialect.DB); err != nil {
 		return nil, err
