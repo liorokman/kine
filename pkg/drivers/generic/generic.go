@@ -343,8 +343,8 @@ func (d *Generic) ListCurrent(ctx context.Context, prefix string, limit int64, i
 }
 
 func (d *Generic) List(ctx context.Context, prefix, startKey string, limit, revision int64, includeDeleted bool) (*sql.Rows, error) {
-	labels, prefix, withLabels := kubernetes.ExtractLabels(prefix)
 	if startKey == "" {
+		labels, prefix, withLabels := kubernetes.ExtractLabels(prefix)
 		sql := d.ListRevisionStartSQL
 		if withLabels {
 			sql = d.ListRevisionStartWithLabelSQL
@@ -360,6 +360,7 @@ func (d *Generic) List(ctx context.Context, prefix, startKey string, limit, revi
 	}
 
 	sql := d.GetRevisionAfterSQL
+	labels, startKey, withLabels := kubernetes.ExtractLabels(startKey)
 	if withLabels {
 		sql = d.GetRevisionAfterWithLabelsSQL
 		logrus.Infof("ListRevisionAfter WithLabels, {sql,labels} = {'%s', '%v'}", sql, labels)
